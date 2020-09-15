@@ -1,5 +1,11 @@
+from glob import glob
+import logging
+from random import choice
+
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-import logging, settings
+
+import settings
+
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     level=logging.INFO,
@@ -11,6 +17,7 @@ def main():
     logging.info('Бот запускается')
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user))
+    dp.add_handler(CommandHandler("cat", send_cat_picture))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me))
     mybot.start_polling()
     mybot.idle()
@@ -25,5 +32,9 @@ def greet_user(bot, update):
     logging.info(text)
     update.message.reply_text(text)
 
+def send_cat_picture(bot, update):
+    cat_list = glob('images/*.jpg')
+    cat_pic = choice(cat_list)
+    bot.send_photo(chat_id=update.message.chat.id, photo=open(cat_pic, 'rb'))
 
 main()
