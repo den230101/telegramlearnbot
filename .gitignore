@@ -3,5 +3,4 @@ settings.py
 env
 pip.conf
 __pycache__
-images
 .vscode

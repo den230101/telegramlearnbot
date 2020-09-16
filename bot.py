@@ -3,7 +3,8 @@ import logging
 from random import choice
 
 from emoji import emojize
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import ReplyKeyboardMarkup, KeyboardButton
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, RegexHandler
 
 import settings
 
@@ -19,6 +20,10 @@ def main():
     dp = mybot.dispatcher
     dp.add_handler(CommandHandler("start", greet_user, pass_user_data=True))
     dp.add_handler(CommandHandler("cat", send_cat_picture, pass_user_data=True))
+    dp.add_handler(RegexHandler('^(Прислать котика)$', send_cat_picture, pass_user_data=True))
+    dp.add_handler(RegexHandler('^(Сменить аватар)$', change_avatar, pass_user_data=True))
+    dp.add_handler(MessageHandler(Filters.contact, get_contact, pass_user_data=True))
+    dp.add_handler(MessageHandler(Filters.location, get_location, pass_user_data=True))
     dp.add_handler(MessageHandler(Filters.text, talk_to_me, pass_user_data=True))
     mybot.start_polling()
     mybot.idle()
@@ -27,18 +32,33 @@ def talk_to_me(bot, update, user_data):
     emo = get_user_emo(user_data)
     user_text = "Привет {} {}! Ты написал: '{}'".format(update.message.chat.first_name, emo, update.message.text)
     logging.info("User: {}, Chat_id: {}, Message: {}".format(update.message.chat.first_name, update.message.chat.id, update.message.text))
-    update.message.reply_text(user_text)
+    update.message.reply_text(user_text, reply_markup=get_keyboard())
 
 def greet_user(bot, update, user_data):
     emo = get_user_emo(user_data)
     text = 'Привет {}'.format(emo)
     logging.info(text)
-    update.message.reply_text(text)
+    update.message.reply_text(text, reply_markup=get_keyboard())
 
 def send_cat_picture(bot, update, user_data):
     cat_list = glob('images/*.jpg')
     cat_pic = choice(cat_list)
-    bot.send_photo(chat_id=update.message.chat.id, photo=open(cat_pic, 'rb'))
+    bot.send_photo(chat_id=update.message.chat.id, photo=open(cat_pic, 'rb'), reply_markup=get_keyboard())
+
+def change_avatar(bot, update, user_data):
+    user_data['emo'] = emojize(choice(settings.USER_EMOJI), use_aliases=True)
+    text = 'Аватар изменен: {}'.format(user_data['emo'])
+    update.message.reply_text(text, reply_markup=get_keyboard())
+
+def get_contact(bot, update, user_data):
+    contact = update.message.contact
+    text = 'Спасибо {}, твой номер: {}'.format(get_user_emo(user_data), contact['phone_number'])
+    update.message.reply_text(text, reply_markup=get_keyboard())
+
+def get_location(bot, update, user_data):
+    location = update.message.location
+    text = 'Спасибо {}, твои координаты: {}'.format(get_user_emo(user_data), str(location))
+    update.message.reply_text(text, reply_markup=get_keyboard())
 
 def get_user_emo(user_data):
     if 'emo' in user_data:
@@ -46,5 +66,14 @@ def get_user_emo(user_data):
     else:
         user_data['emo'] = emojize(choice(settings.USER_EMOJI), use_aliases=True)
     return user_data['emo']
+
+def get_keyboard():
+    contact_button = KeyboardButton('Прислать контакты', request_contact=True)
+    location_button = KeyboardButton('Прислать координаты', request_location=True)
+    my_keyboard = ReplyKeyboardMarkup([
+        ['Прислать котика', 'Сменить аватар'],
+        [contact_button, location_button]
+        ], resize_keyboard=True)
+    return my_keyboard
 
 main()
