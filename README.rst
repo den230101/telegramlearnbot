@@ -7,7 +7,9 @@ CatBot - присылает фото кошек
 ---------
 
 Создайте виртуалтьное окружение и активируйте его. Затем выполните в нем:
+
 .. code-block:: text
+
     pip install -r requirements.text
 
 Положите картинки с кошками в папку images. Файлы должны иметь расширение .jpg
@@ -19,13 +21,15 @@ CatBot - присылает фото кошек
 
 .. code-block:: python
 
-API_KEY = "Ваш ключ API, полученный от BotFather"
+    API_KEY = "Ваш ключ API, полученный от BotFather"
 
-USER_EMOJI = [":smiley_cat:", ":smiling_imp:", ":panda_face:", ":dog:"]
+    USER_EMOJI = [":smiley_cat:", ":smiling_imp:", ":panda_face:", ":dog:"]
 
 Запуск
 ------
 
 В активированном виртуальном окружении выполните:
+
 .. code-block:: text
+
     python bot.py
