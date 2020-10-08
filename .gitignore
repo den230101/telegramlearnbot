@@ -4,3 +4,4 @@ env
 pip.conf
 __pycache__
 .vscode
+downloads

@@ -1,10 +1,10 @@
-import logging
+import logging, os
 from glob import glob
 from random import choice
 
 from emoji import emojize
 
-from utils import get_user_emo, get_keyboard
+from utils import get_user_emo, get_keyboard, is_cat
 import settings
 
 def talk_to_me(bot, update, user_data):
@@ -38,3 +38,17 @@ def get_location(bot, update, user_data):
     location = update.message.location
     text = 'Спасибо {}, твои координаты: {}'.format(get_user_emo(user_data), str(location))
     update.message.reply_text(text, reply_markup=get_keyboard())
+
+def check_user_photo(bot, update, user_data):
+    update.message.reply_text("Обрабатываю фото")
+    os.makedirs('downloads', exist_ok=True)
+    photo_file = bot.getFile(update.message.photo[-1].file_id)
+    filename = os.path.join('downloads', '{}.jpg'.format(photo_file.file_id))
+    photo_file.download(filename)
+    if is_cat(filename):
+        update.message.reply_text("Найден котэ, добавляю в библиотеку")
+        new_filename = os.path.join('images', 'cat_{}.jpg'.format(photo_file.file_id))
+        os.rename(filename, new_filename)
+    else:
+        update.message.reply_text("Котик не обнаружен!")
+        os.remove(filename)
